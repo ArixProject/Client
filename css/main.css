@@ -1,0 +1,179 @@
+#adsBottom,
+#canvas {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute
+}
+
+#adsBottom,
+#canvas,
+#chat_textbox,
+#helloDialog {
+    position: absolute;
+}
+
+.ui-dialog,
+body {
+    overflow: hidden
+}
+
+body {
+    padding: 0;
+    margin: 0
+}
+
+#canvas {
+    top: 0;
+    width: 100%;
+    height: 100%
+}
+
+.checkbox label {
+    margin-right: 10px
+}
+
+form {
+    margin-bottom: 0
+}
+
+.btn-play,
+.btn-settings,
+.btn-spectate {
+    display: block;
+    height: 35px
+}
+
+.btn-play {
+    width: 60%;
+    float: left
+}
+
+.btn-settings {
+    width: 13%;
+    float: right
+}
+
+.btn-spectate {
+    display: block;
+    float: right
+}
+
+#adsBottomInner {
+    margin: 0 auto;
+    width: 728px;
+    height: 90px;
+    border: 5px solid #fff;
+    border-radius: 5px 5px 0 0;
+    background-color: #FFF;
+    box-sizing: content-box
+}
+
+.region-message {
+    display: none;
+    margin-bottom: 12px;
+    margin-left: 6px;
+    margin-right: 6px;
+    text-align: center
+}
+
+#locationKnown #region,
+#nick {
+    width: 65%;
+    float: left
+}
+
+#locationUnknown #region {
+    margin-bottom: 15px
+}
+
+#gamemode,
+#spectateBtn {
+    width: 33%;
+    float: right
+}
+
+#helloDialog:hover {
+    border: 1px solid black;
+}
+
+#helloDialog {
+
+    top: 50%;
+    left: 50%;
+    display: inline-block;
+    width: 350px;
+    background-color: #FFF;
+    margin: 2px;
+    border-radius: 10px;
+    padding: 5px 15px;
+    vertical-align: top;
+}
+
+#chat_textbox {
+    -webkit-transition: all .5s ease-in-out;
+    -moz-transition: all .5s ease-in-out;
+    -o-transition: all .5s ease-in-out;
+    transition: all .5s ease-in-out;
+    z-index: 1;
+    bottom: 10px;
+    background: rgba(0, 0, 0, .2);
+    border: 0;
+    outline: 0;
+    color: #FFF;
+    height: 30px;
+    text-indent: 12px;
+    left: 10px;
+    width: 300px
+}
+
+#chat_textbox:focus {
+    background: rgba(0, 0, 0, .5)
+}
+
+#a300x250 {
+    width: 300px;
+    height: 250px;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center center
+}
+
+.ui-dialog {
+    background-color: #141414;
+    background-image: url(http://agariohub.tk/assets/img/texture.png);
+    z-index: 100000
+}
+
+.ui-widget-overlay {
+    overflow: hidden;
+    z-index: 1000000
+}
+
+.skinclick {
+    cursor: pointer;
+    padding: 2px;
+    position: relative;
+    right: -12px;
+    border-radius: 50%;
+    -webkit-transition: all .5s ease;
+    -moz-transition: all .5s ease;
+    -ms-transition: all .5s ease;
+    -o-transition: all .5s ease;
+    transition: all .5s ease;
+    border: 1px solid orange
+}
+
+.skinlist:hover {
+    cursor: pointer;
+}
+
+.skinclick:hover {
+    border: 1px solid #fff;
+    z-index: 99999999999999;
+    -webkit-transform: scale(2.25);
+    -moz-transform: scale(2.25);
+    -ms-transform: scale(2.25);
+    -o-transform: scale(2.25);
+    transform: scale(2.25)
+}

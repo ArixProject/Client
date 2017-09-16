@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Client</title>
+    <link id="fav" rel="icon" type="image/png" href="Your Icon Link/Path Here" />
+    <link href='https://fonts.googleapis.com/css?family=Ubuntu:700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/yeti/bootstrap.min.css">
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <canvas height="600" id="canvas" width="800"></canvas>    
+    <script src="main.js"></script>
+    <link rel="stylesheet" href="./css/main.css">
+
+</head>
+
+<body>
+    <div id="fb-root"></div>
+    <div id="overlays" style="display:none; position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 200;">
+        <div id="helloDialog">
+            <form role="form">
+                <div class="form-group">
+                    <div>
+                        <h1 style="text-align: center;">Client</h1>
+                    </div>
+                    <div class="fb-like" data-action="like" data-href="https://www.facebook.com/playagar.io" data-layout="button" data-share="true"
+                        data-show-faces="true" style="float: right; margin-top: 30px;"></div>
+                    <!--<div style="margin-left: 55px">
+                        <a href="https://github.com/FantasyIsBae/Client">Github</a>
+                    </div>-->
+                </div>
+                <div class="form-group">
+                    <input class="form-control" id="nick" maxlength="15" style="align: center;" placeholder="Nick">
+                    <br clear="both">
+                </div>
+
+                <div class="form-group">
+                    <div>
+                        <p></p>
+                    </div>
+                    <button class="btn btn-play btn-primary btn-needs-server" id="playBtn" onclick="setNick(document.getElementById('nick').value); return false;" type="submit">Play</button>
+                    <button class="btn btn-warning btn-spectate btn-needs-server" id="spectateBtn" onclick="spectate(); return false;">Spectate</button>                    
+                    <br clear="both">
+                </div>
+                <div id="cantc" style="display:none;">
+                    <h4>Cannot connect to server, click the reconnect button below to try again</h4><br>
+                </div>
+                <hr>
+                <div class="checkbox" id="settings">
+                    <div style="margin: 6px;">
+                        <label><input id="cskin" onchange="setSkins(!$(this).is(':checked'));" type="checkbox"> No skins</label>
+                        <label><input id="cname" onchange="setNames(!$(this).is(':checked'));" type="checkbox"> No names</label>
+                        <label><input id="cdark" onchange="setDarkTheme($(this).is(':checked'));" type="checkbox"> Dark Theme</label>
+                        <label><input id="ccolor" onchange="setColors($(this).is(':checked'));" type="checkbox"> No colors</label>
+                        <label><input id="cmass" onchange="setShowMass($(this).is(':checked'));" type="checkbox"> Show mass</label>
+                        <label><input id="cchat" onchange="setHideChat($(this).is(':checked'));" type="checkbox"> No chat</label>
+                        <label><input id="csmooth" onchange="setSmooth($(this).is(':checked'));" type="checkbox"> Low Lag</label>
+                        <label><input id="cacid" onchange="setAcid($(this).is(':checked'));" type="checkbox"> No Grid</label>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div>
+    <div id="connecting" style="display:none;position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 100; background-color: rgba(0,0,0,0.5);">
+        <div style="width: 350px; background-color: #FFFFFF; margin: 100px auto; border-radius: 15px; padding: 5px 15px 5px 15px;">
+            <h2>Connecting</h2>
+            <p>Connection couldn't be established.<br>Please refresh and try again.</p>
+        </div>
+    </div>
+    <form>
+        <input id="chat_textbox" maxlength="200" placeholder="Press Enter to chat!" type="text">
+    </form>
+</body>
+
+</html>
