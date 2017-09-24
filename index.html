@@ -1,75 +1,69 @@
-<!DOCTYPE html>
 <html>
 
 <head>
     <title>Client</title>
-    <link id="fav" rel="icon" type="image/png" href="Your Icon Link/Path Here" />
-    <link href='https://fonts.googleapis.com/css?family=Ubuntu:700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/yeti/bootstrap.min.css">
+    <canvas height="600" id="canvas" width="800"></canvas>
+    <link id="fav" rel="icon" type="image/png" href="icon.png" />
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.0-rc.2/themes/smoothness/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Russo+One" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
+    <link rel="stylesheet" href="./css/Bootstrap.css"></link>
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="./css/csshake.min.css">
+    <link rel="stylesheet" href="css/swal.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
-    <canvas height="600" id="canvas" width="800"></canvas>    
-    <script src="main.js"></script>
-    <link rel="stylesheet" href="./css/main.css">
-
+    <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.3/toastr.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.3/toastr.css" />
+        <script src="https://code.jquery.com/ui/1.12.0-rc.2/jquery-ui.min.js"></script>
+    <script src="js/swal.js"></script>
+    <script src="./js/main.js"></script>
 </head>
 
 <body>
-    <div id="fb-root"></div>
-    <div id="overlays" style="display:none; position: absolute; left: 0; right: 0; top: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 200;">
-        <div id="helloDialog">
+
+
+    <div id="overlays" style="background-color: rgba(0, 0, 0, 0.4); position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 200;font-family: Orbitron;">
+
+        <div style="background-image: url(http://inspiringdiscovery.com/wp-content/uploads/2013/07/harbour_sunset-wide.jpg)" id="helloDialog">
+
             <form role="form">
                 <div class="form-group">
-                    <div>
-                        <h1 style="text-align: center;">Client</h1>
+                    <div style="float: left; margin-left: 20px;">
+                        <h2 style="font-family: 'Orbitron', sans-serif;font-size: 45px;color: orange;" id="titleh">Client</h2>
                     </div>
-
+                    <br clear="both">
                 </div>
                 <div class="form-group">
                     <input class="form-control" id="nick" maxlength="15" placeholder="Nick">
-                    <br clear="both">
-                </div>
 
+                </div>
+                <br>
                 <div class="form-group">
                     <div>
-                        <p></p>
+                        <br>
                     </div>
-                    <button class="btn btn-play btn-primary btn-needs-server" id="playBtn" onclick="setNick(document.getElementById('nick').value); return false;" type="submit">Play</button>
-                    <button class="btn btn-warning btn-spectate btn-needs-server" id="spectateBtn" onclick="spectate(); return false;">Spectate</button>                    
+                    <button class="shake-constant btn btn-play btn-primary btn-needs-server" style="background-color: orange;" id="playBtn" onclick="setNick(document.getElementById('nick').value); return false;"
+                        type="submit">Join</button>
+                    <button class="btn btn-warning btn-watch btn-needs-server" style="background-color: orange;" id="watchBtn" onclick="watch(); return false;">Watch</button>
                     <br clear="both">
-                </div>
-                <div id="cantc" style="display:none;">
-                    <h4>Cannot connect to server, click the reconnect button below to try again</h4><br>
-                </div>
-                <hr>
-                <div class="checkbox" id="settings">
-                    <div style="margin: 6px;">
-                        <label><input id="cskin" onchange="setSkins(!$(this).is(':checked'));" type="checkbox"> No skins</label>
-                        <label><input id="cname" onchange="setNames(!$(this).is(':checked'));" type="checkbox"> No names</label>
-                        <label><input id="cdark" onchange="setDarkTheme($(this).is(':checked'));" type="checkbox"> Dark Theme</label>
-                        <label><input id="ccolor" onchange="setColors($(this).is(':checked'));" type="checkbox"> No colors</label>
-                        <label><input id="cmass" onchange="setShowMass($(this).is(':checked'));" type="checkbox"> Show mass</label>
-                        <label><input id="cchat" onchange="setHideChat($(this).is(':checked'));" type="checkbox"> No chat</label>
-                        <label><input id="csmooth" onchange="setSmooth($(this).is(':checked'));" type="checkbox"> Low Lag</label>
-                        <label><input id="cacid" onchange="setAcid($(this).is(':checked'));" type="checkbox"> No Grid</label>
-                    </div>
-                </div>
-                
-                <div style="position: relative;text-align: center;padding:20px;">
-                    <a href="https://github.com/Fan7asy/Client">Github Repo</a>
+                    <br>
                 </div>
             </form>
+
+
+            <hr>
+            <p>
+                An open-source client made by <a href="https://github.com/Fan7asy" target="_blank">Fan7asy</a>
+            </p>
+
         </div>
+
     </div>
-    </div>
-    <div id="connecting" style="display:none;position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 100; background-color: rgba(0,0,0,0.5);">
-        <div style="width: 350px; background-color: #FFFFFF; margin: 100px auto; border-radius: 15px; padding: 5px 15px 5px 15px;">
-            <h2>Connecting</h2>
-            <p>Connection couldn't be established.<br>Please refresh and try again.</p>
-        </div>
-    </div>
-    <form>
-        <input id="chat_textbox" maxlength="200" placeholder="Press enter to chat" type="text">
-    </form>
 </body>
 
 </html>
