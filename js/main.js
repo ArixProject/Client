@@ -1,9 +1,7 @@
 let request = prompt("Enter server address:port", "ws://127.0.0.1:443");
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-let lbCanvas;
-let canvasWidth;
-let canvasHeight;
+let leaderBoard = [];
 let ws = null;
 let nodeX = 0;
 let nodeY = 0;
@@ -35,6 +33,15 @@ let minY = 0;
 let maxX = 0;
 let maxY = 0;
 let noRanking = false;
+let options = {
+    delay: 120,
+    sectors: false,
+    borders: false,
+    bgColour: "222222",
+    borderColour: "FFA500",
+    sectorColour: "1A1A1A"
+};
+
 let fps = {
     startTime: 0,
     frameNumber: 0,
@@ -50,20 +57,21 @@ let fps = {
         return result;
     }
 };
+
 $(document).ready(function () {
-    updateWindowFunctions();
     connect(request, true);
 });
 
-function Loop() {
+function Main() {
     document.getElementById("canvas").focus();
+    canvas = document.getElementById("canvas");
     canvas.onmousemove = function (event) {
         rawMouseX = event.clientX;
         rawMouseY = event.clientY;
         updateMouse()
     };
     document.body.onmousewheel = handleWheel;
-    document.body.onresize = canvasResize;
+    window.onresize = canvasResize;
     if (window.requestAnimationFrame) {
         reDraw();
     }
@@ -73,8 +81,8 @@ function Loop() {
 }
 
 function updateMouse() {
-    X = (rawMouseX - canvasWidth / 2) / viewZoom + nodeX;
-    Y = (rawMouseY - canvasHeight / 2) / viewZoom + nodeY
+    X = (rawMouseX - ctx.canvas.width / 2) / viewZoom + nodeX;
+    Y = (rawMouseY - ctx.canvas.height / 2) / viewZoom + nodeY
 }
 
 function hideOverlays() {
@@ -82,35 +90,75 @@ function hideOverlays() {
 }
 
 function updateWindowFunctions() {
+
+    // Window functions
+
     window.onkeydown = function (event) {
         switch (event.keyCode) {
             case 32:
-                sendMouseMove();
+                // Space (Split)
                 sendUint8(17);
                 break;
             case 81:
+                // Q
                 sendUint8(18);
                 break;
             case 87:
-                sendMouseMove();
+                // W
                 sendUint8(21);
                 break;
             case 27:
+                // ESC (Menu)
                 showOverlays(true);
                 break;
-        }
+            case 80:
+                // P (Collect pellets)
+                sendUint8(25);
+                break;
+        };
+
     };
+
     window.setNick = function (arg) {
         hideOverlays();
         userNickName = arg;
         sendNickName();
         userScore = 0
     };
+
     window.watch = function () {
         userNickName = null;
         sendUint8(1);
         hideOverlays()
     };
+
+    // Handle options
+
+    $("#delay").on("input", function () {
+        $("#animationTxt").text("Animation delay " + $("#delay").val());
+        options.delay = Number($("#delay").val());
+    });
+
+    $("#sectors").change(function () {
+        options.sectors = $(this).is(':checked');
+    });
+
+    $("#borders").change(function () {
+        options.borders = $(this).is(':checked');
+    });
+
+    $("#bgColour").change(function () {
+        options.bgColour = $("#bgColour").val();
+    });
+    
+    $("#borderColour").change(function () {
+        options.borderColour = $("#borderColour").val();
+    });
+
+    $("#sectorColour").change(function () {
+        options.sectorColour = $("#sectorColour").val();
+    });
+
     if (playerCells.length === 0) {
         showOverlays(true)
     }
@@ -133,7 +181,7 @@ function resetVars() {
 }
 
 function connect(url) {
-    toastr.info("Connecting to " + url);
+    console.log("Connecting to " + url);
     ws = new WebSocket(url);
     ws.binaryType = "arraybuffer";
     ws.onmessage = onWsMessage;
@@ -151,12 +199,12 @@ function connect(url) {
         msg.setUint32(1, 1332175218, true);
         send(msg);
         setTimeout(function () {
-            toastr.success(url, 'Connected to server!');
+            console.log('Connected to server!');
         }, 1000);
     }
     ws.onclose = function (e) {
         connect(request);
-        toastr.err(url, "Disconnected from server!");
+        console.log("Disconnected from server!");
     }
 }
 
@@ -242,9 +290,9 @@ function handleMessage(msg) {
                 leaderBoard.push({
                     id: nodeId,
                     name: getString()
-                })
+                });
             }
-            CreateLeaderboard();
+            //CreateLeaderboard();
             break;
         case 50:
             teamScores = [];
@@ -254,7 +302,7 @@ function handleMessage(msg) {
                 teamScores.push(msg.getFloat32(offset, true));
                 offset += 4;
             }
-            CreateLeaderboard();
+            //CreateLeaderboard();
             break;
         case 64:
             leftPos = msg.getFloat64(offset, true);
@@ -353,7 +401,6 @@ function updateNodes(view, offset) {
         node.updateCode = code;
         node.updateTime = timestamp;
         node.flag = flags;
-        name && node.setName(name);
         if (-1 != nodesOnScreen.indexOf(nodeid) && -1 == playerCells.indexOf(node)) {
             document.getElementById("overlays").style.display = "none";
             playerCells.push(node);
@@ -375,44 +422,47 @@ function updateNodes(view, offset) {
 
 function Sectors() {
     // Taken from AgarPlus
-    ctx.strokeRect(minX, maxY, 500, 500);
-    var x = Math.round(minX) + 40;
-    var y = Math.round(minY) + 40;
-    var second = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-    var barWidth = (Math.round(maxX) - 90 - x) / 5;
-    var h = (Math.round(maxY) - 40 - y) / 5;
-    ctx.save();
-    ctx.beginPath();
-    ctx.lineWidth = 0.05;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.font = barWidth * 0.6 + "px Russo One";
-    ctx.fillStyle = "#1A1A1A";
-    var j = 0;
-    for (; 5 > j; j++) {
-        var i = 0;
-        for (; 5 > i; i++) {
-            ctx.fillText(second[j] + (i + 1), x + barWidth * i + barWidth / 2, y + h * j + h / 2);
+
+    if (options.sectors === true) {
+        ctx.strokeRect(minX, maxY, 500, 500);
+        var x = Math.round(minX) + 40;
+        var y = Math.round(minY) + 40;
+        var second = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        var barWidth = (Math.round(maxX) - 90 - x) / 5;
+        var h = (Math.round(maxY) - 40 - y) / 5;
+        ctx.save();
+        ctx.beginPath();
+        ctx.lineWidth = 0.05;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = barWidth * 0.6 + "px Russo One";
+        ctx.fillStyle = "#" + options.sectorColour;
+        var j = 0;
+        for (; 5 > j; j++) {
+            var i = 0;
+            for (; 5 > i; i++) {
+                ctx.fillText(second[j] + (i + 1), x + barWidth * i + barWidth / 2, y + h * j + h / 2);
+            }
         }
-    }
-    ctx.lineWidth = 100;
-    ctx.strokeStyle = "#1A1A1A";
-    j = 0;
-    for (; 5 > j; j++) {
-        i = 0;
-        for (; 5 > i; i++) {
-            ctx.strokeRect(x + barWidth * i, y + h * j, barWidth, h);
+        ctx.lineWidth = 100;
+        ctx.strokeStyle = "#1A1A1A";
+        j = 0;
+        for (; 5 > j; j++) {
+            i = 0;
+            for (; 5 > i; i++) {
+                ctx.strokeRect(x + barWidth * i, y + h * j, barWidth, h);
+            }
         }
-    }
-    ctx.stroke();
-    ctx.restore();
+        ctx.stroke();
+        ctx.restore();
+    };
 }
 
 function sendMouseMove() {
     var msg;
     if (wsIsOpen()) {
-        msg = rawMouseX - canvasWidth / 2;
-        var b = rawMouseY - canvasHeight / 2;
+        msg = rawMouseX - ctx.canvas.width / 2;
+        var b = rawMouseY - ctx.canvas.height / 2;
         msg = prepareData(21);
         msg.setUint8(0, 16);
         msg.setFloat64(1, X, true);
@@ -450,15 +500,15 @@ function reDraw() {
 
 function canvasResize() {
     window.scrollTo(0, 0);
-    canvasWidth = window.innerWidth;
-    canvasHeight = window.innerHeight;
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
+    ctx.canvas.width = window.innerWidth;
+    ctx.canvas.height = window.innerHeight;
+    ctx.canvas.width = ctx.canvas.width;
+    ctx.canvas.height = ctx.canvas.height;
 }
 
 function viewRange() {
     var ratio;
-    ratio = Math.max(canvasHeight / 1080, canvasWidth / 1920);
+    ratio = Math.max(ctx.canvas.height / 1080, ctx.canvas.width / 1920);
     return ratio * zoom;
 }
 
@@ -471,8 +521,10 @@ function calcViewZoom() {
 }
 
 function Draw() {
+
     var a, oldtime = Date.now();
     timestamp = oldtime;
+
     if (0 < playerCells.length) {
         calcViewZoom();
         var c = a = 0;
@@ -491,13 +543,16 @@ function Draw() {
         nodeY = (29 * nodeY + posY) / 30;
         viewZoom = (9 * viewZoom + posSize * viewRange()) / 10;
     }
+
     updateMouse();
     drawBackground();
+
     nodelist.sort(function (a, b) {
         return a.size == b.size ? a.id - b.id : a.size - b.size
     });
+
     ctx.save();
-    ctx.translate(canvasWidth / 2, canvasHeight / 2);
+    ctx.translate(ctx.canvas.width / 2, ctx.canvas.height / 2);
     ctx.scale(viewZoom, viewZoom);
     ctx.translate(-nodeX, -nodeY);
     Sectors();
@@ -505,51 +560,52 @@ function Draw() {
     for (d = 0; d < Cells.length; d++) Cells[d].drawOneCell(ctx);
     for (d = 0; d < nodelist.length; d++) nodelist[d].drawOneCell(ctx);
     ctx.restore();
-    lbCanvas && lbCanvas.width && ctx.drawImage(lbCanvas, canvasWidth - lbCanvas.width - 10, 10);
+    CreateLeaderboard();
     userScore = Math.max(userScore, calcUserScore());
-    scoreText = new UText(24, '#FFFFFF');
-    scoreText.setValue('Score: ' + ~~(userScore / 100));
-    c = scoreText.render();
-    a = c.width;
-    ctx.globalAlpha = .2;
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(10, 10, a + 10, 34);
-    ctx.globalAlpha = 1;
-    ctx.drawImage(c, 15, 15);
-    cellText = new UText(24, '#FFFFFF');
-    cellText.setValue('FPS: ' + fps.getFPS());
-    c = cellText.render();
-    a = c.width;
-    ctx.globalAlpha = .2;
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(20, 50, a + 10, 34);
-    ctx.globalAlpha = 1;
-    ctx.drawImage(c, 25, 55);
-}
 
-function Borders() {
-    ctx.save();
-    ctx.strokeStyle = "#FFFFFF";
-    ctx.lineWidth = 20;
-    ctx.beginPath();
-    ctx.moveTo(minX, minY);
-    ctx.lineTo(maxX, minY);
-    ctx.lineTo(maxX, maxY);
-    ctx.lineTo(minX, maxY);
-    ctx.closePath();
-    ctx.stroke();
+    let scoreText = "Score " + ~~(userScore / 100);
+    ctx.globalAlpha = 1;
+    ctx.font = '20px Tahoma';
+    ctx.fillStyle = '#FFF';
+    ctx.fillText(scoreText, 10, 25);
+
+    let frames = fps.getFPS();
+    let fpsText = "FPS " + frames;
+
+    if (frames >= 40) {
+        ctx.fillStyle = "#00FF00";
+    } else if (frames >= 30) {
+        ctx.fillStyle = "#FFFF33";
+    } else {
+        ctx.fillStyle = "#FF0000";
+    };
+
+    ctx.globalAlpha = 1;
+    ctx.font = '20px Tahoma';
+    ctx.fillText(fpsText, 10, 50);
     ctx.restore();
 }
 
+function Borders() {
+    if (options.borders === true) {
+        ctx.save();
+        ctx.strokeStyle = "#" + options.borderColour;
+        ctx.lineWidth = 20;
+        ctx.beginPath();
+        ctx.moveTo(minX, minY);
+        ctx.lineTo(maxX, minY);
+        ctx.lineTo(maxX, maxY);
+        ctx.lineTo(minX, maxY);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.restore();
+    }
+}
+
 function drawBackground() {
-    ctx.fillStyle = "#222222";
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    ctx.fillStyle = "#" + options.bgColour;
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.save();
-    ctx.globalAlpha = .2;
-    ctx.scale(viewZoom, viewZoom);
-    var a = canvasWidth,
-        b = canvasHeight;
-    ctx.restore()
 }
 
 function calcUserScore() {
@@ -558,76 +614,27 @@ function calcUserScore() {
 }
 
 function CreateLeaderboard() {
-    lbCanvas = null;
-    if (null != teamScores || 0 != leaderBoard.length)
-        if (null != teamScores || showName) {
-            lbCanvas = document.createElement("canvas");
-            var ctx = lbCanvas.getContext("2d"),
-                boardLength = 60;
-            boardLength = boardLength + 24 * leaderBoard.length;
-            var scaleFactor = Math.min(0.22 * canvasHeight, Math.min(200, .3 * canvasWidth)) / 200;
-            lbCanvas.width = 200 * scaleFactor;
-            lbCanvas.height = boardLength * scaleFactor;
-            ctx.scale(scaleFactor, scaleFactor);
-            ctx.globalAlpha = .4;
-            ctx.fillStyle = "#000000";
-            ctx.fillRect(0, 0, 400, boardLength);
-            ctx.globalAlpha = 1;
-            ctx.fillStyle = "#FFFFFF";
-            var c = "Leaders";
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = "30px Russo One";
-            ctx.fillText(c, 100 - ctx.measureText(c).width / 2, 40);
-            var b;
-            for (ctx.font = "18px Russo One", b = 0; b < leaderBoard.length; ++b) {
-                c = leaderBoard[b].name || "No Name";
-                if (!showName) {
-                    (c = "No Name");
-                }
-                if (-1 != nodesOnScreen.indexOf(leaderBoard[b].id)) {
-                    playerCells[0].name && (c = playerCells[0].name);
-                    ctx.fillStyle = "#D52222";
-                    if (!noRanking) {
-                        c = b + 1 + ". " + c;
-                    }
-                    ctx.fillText(c, 100 - ctx.measureText(c).width / 2, 70 + 24 * b);
-                } else {
-                    ctx.fillStyle = "#FFFFFF";
-                    if (!noRanking) {
-                        c = b + 1 + ". " + c;
-                    }
-                    ctx.fillText(c, 100 - ctx.measureText(c).width / 2, 70 + 24 * b);
-                }
-            }
-        }
+
 }
 
-function Cell(uid, ux, uy, usize, ucolor, uname) {
-    this.id = uid;
-    this.ox = this.x = ux;
-    this.oy = this.y = uy;
-    this.oSize = this.size = usize;
-    this.color = ucolor;
+function Cell(id, x, y, size, color, name) {
+    this.id = id;
+    this.ox = this.x = x;
+    this.oy = this.y = y;
+    this.oSize = this.size = size;
+    this.color = color;
     this.points = [];
     this.pointsAcc = [];
     this.createPoints();
-    this.setName(uname)
+    this.name = name;
 }
 
-function UText(usize, ucolor, ustroke, ustrokecolor) {
-    usize && (this._size = usize);
-    ucolor && (this._color = ucolor);
-    this._stroke = !!ustroke;
-    ustrokecolor && (this._strokeColor = ustrokecolor)
-}
 var scoreText = null;
 Cell.prototype = {
     id: 0,
     points: null,
     pointsAcc: null,
     name: null,
-    nameCache: null,
-    sizeCache: null,
     x: 0,
     y: 0,
     size: 0,
@@ -640,7 +647,7 @@ Cell.prototype = {
     flag: 0,
     updateTime: 0,
     updateCode: 0,
-    drawTime: 0,
+    delay: 0,
     destroyed: false,
     isVirus: false,
     destroy: function () {
@@ -664,17 +671,6 @@ Cell.prototype = {
     },
     getNameSize: function () {
         return Math.max(~~(.3 * this.size), 24)
-    },
-    setName: function (a) {
-        if (this.name = a) {
-            if (null == this.nameCache) {
-                this.nameCache = new UText(this.getNameSize(), "#FFFFFF", true, "#000000");
-                this.nameCache.setValue(this.name);
-            } else {
-                this.nameCache.setSize(this.getNameSize());
-                this.nameCache.setValue(this.name);
-            }
-        }
     },
     createPoints: function () {
         for (var samplenum = this.getNumPoints(); this.points.length > samplenum;) {
@@ -716,7 +712,7 @@ Cell.prototype = {
     updatePos: function () {
         if (0 == this.id) return 1;
         var a;
-        a = (timestamp - this.updateTime) / 120;
+        a = (timestamp - this.updateTime) / options.delay;
         a = 0 > a ? 0 : 1 < a ? 1 : a;
         var b = 0 > a ? 0 : 1 < a ? 1 : a;
         this.getNameSize();
@@ -732,123 +728,71 @@ Cell.prototype = {
         if (0 == this.id) {
             return true
         } else {
-            return !(this.x + this.size + 40 < nodeX - canvasWidth / 2 / viewZoom || this.y + this.size + 40 < nodeY - canvasHeight / 2 / viewZoom || this.x - this.size - 40 > nodeX + canvasWidth / 2 / viewZoom || this.y - this.size - 40 > nodeY + canvasHeight / 2 / viewZoom);
+            return !(this.x + this.size + 40 < nodeX - ctx.canvas.width / 2 / viewZoom || this.y + this.size + 40 < nodeY - ctx.canvas.height / 2 / viewZoom || this.x - this.size - 40 > nodeX + ctx.canvas.width / 2 / viewZoom || this.y - this.size - 40 > nodeY + ctx.canvas.height / 2 / viewZoom);
         }
     },
     drawOneCell: function (ctx) {
         if (this.shouldRender()) {
-            var b = (0 != this.id && !this.isVirus);
-            if (5 > this.getNumPoints()) b = true;
+
             ctx.save();
-            this.drawTime = timestamp;
             c = this.updatePos();
             this.destroyed && (ctx.globalAlpha *= 1 - c);
             ctx.lineWidth = 10;
-            ctx.lineCap = "round";
-            ctx.lineJoin = this.isVirus ? "miter" : "round";
             ctx.fillStyle = this.color;
-            ctx.strokeStyle = this.color;
+
+            // Draw nodes
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI, false);
+            ctx.arc(this.x, this.y, this.size, .1, 2 * Math.PI, false);
             ctx.closePath();
             ctx.fill();
-            c = -1 != playerCells.indexOf(this);
-            var ncache;
+
+            // Draw skins
+            if (-1 != playerCells.indexOf(this)) {
+                const skin = new Image;
+                const skinUrl = String($("#skinUrl").val());
+
+                if (skinUrl.substr(0, 20) === "https://i.imgur.com/") {
+                    skin.src = skinUrl;
+                };
+
+                ctx.save();
+                ctx.clip();
+                ctx.drawImage(skin, this.x - this.size, this.y - this.size, 2 * this.size, 2 * this.size);
+                ctx.restore();
+
+            }
+
             if (0 != this.id) {
-                var b = ~~this.y;
-                if (this.name && this.nameCache) {
-                    ncache = this.nameCache;
-                    ncache.setValue(this.name);
-                    ncache.setSize(this.getNameSize());
-                    var ratio = Math.ceil(10 * viewZoom) / 10;
-                    ncache.setScale(ratio);
-                    var rnchache = ncache.render(),
-                        m = ~~(rnchache.width / ratio),
-                        h = ~~(rnchache.height / ratio);
-                    ctx.drawImage(rnchache, ~~this.x - ~~(m / 2), b - ~~(h / 2), m, h);
-                    b += rnchache.height / 2 / ratio + 4
-                }
-                if ((20 < this.size)) {
-                    if (null == this.sizeCache) {
-                        this.sizeCache = new UText(this.getNameSize(), "#FFFFFF", true, "#000000")
-                    }
-                    c = this.sizeCache;
-                    c.setSize(this.getNameSize() / 2);
-                    c.setValue(~~(this.size * this.size / 100));
-                    ratio = Math.ceil(10 * viewZoom) / 10;
-                    c.setScale(ratio);
-                    e = c.render();
-                    m = ~~(e.width / ratio);
-                    h = ~~(e.height / ratio);
-                    ctx.drawImage(e, ~~this.x - ~~(m / 2), b - ~~(h / 2), m, h);
-                }
+
+                // Cell stroke
+                ctx.strokeStyle = this.color;
+                ctx.globalAlpha = .7;
+                ctx.stroke();
+
+                // Draw name
+                if (this.name && ~~(this.size * this.size / 100) >= 200) {
+                    ctx.globalAlpha = 1;
+                    ctx.font = Math.max(~~(.3 * this.size), 24) + 'px Tahoma';
+                    ctx.fillStyle = '#FFF';
+                    ctx.textAlign = "center";
+                    ctx.fillText(this.name, this.x, this.y);
+                };
+
+                // Draw size
+                if (~~(this.size * this.size / 100) >= 20) {
+                    ctx.globalAlpha = 1;
+                    ctx.font = Math.max(~~(.3 * this.size), 24) + 'px Tahoma';
+                    ctx.fillStyle = '#FFF';
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(~~(this.size * this.size / 100), this.x, this.y + 60);
+                };
             }
             ctx.restore()
         }
     }
 };
-UText.prototype = {
-    _value: "",
-    _color: "#FFFFFF",
-    _stroke: true,
-    _strokeColor: "#000000",
-    _size: 30,
-    _canvas: null,
-    _ctx: null,
-    _dirty: true,
-    _scale: 1,
-    setSize: function (a) {
-        if (this._size != a) {
-            this._size = a;
-            this._dirty = true;
-        }
-    },
-    setScale: function (a) {
-        if (this._scale != a) {
-            this._scale = a;
-            this._dirty = true;
-        }
-    },
-    setStrokeColor: function (a) {
-        if (this._strokeColor != a) {
-            this._strokeColor = a;
-            this._dirty = true;
-        }
-    },
-    setValue: function (a) {
-        if (a != this._value) {
-            this._value = a;
-            this._dirty = true;
-        }
-    },
-    render: function () {
-        if (null == this._canvas) {
-            this._canvas = document.createElement("canvas");
-            this._ctx = this._canvas.getContext("2d");
-        }
-        if (this._dirty) {
-            this._dirty = false;
-            var canvas = this._canvas,
-                ctx = this._ctx,
-                value = this._value,
-                scale = this._scale,
-                fontsize = this._size,
-                font = fontsize * 1.1 + 'px Russo One';
-            ctx.font = font;
-            var h = ~~(.2 * fontsize);
-            canvas.width = (ctx.measureText(value).width + 6) * scale;
-            canvas.height = (fontsize + h) * scale;
-            ctx.font = font;
-            ctx.scale(scale, scale);
-            ctx.lineWidth = 3;
-            ctx.fillStyle = this._color;
-            ctx.fillText(value, 3, fontsize - h / 2)
-        }
-        return this._canvas
-    },
-    getWidth: function () {
-        return (ctx.measureText(this._value).width + 6);
-    }
-};
-Loop();
 
+Main();
+
+setInterval(updateWindowFunctions, 100);

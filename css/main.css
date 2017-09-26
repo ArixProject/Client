@@ -1,184 +1,100 @@
-            #canvas {
-            left: 0;
-            right: 0;
-            bottom: 0;
-            position: absolute
-        }
+            body,
+            html {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+            }
 
-        #helloDialog {
-            position: absolute;
-        }
+            form {
+                display: block;
+                margin-top: 0em;
+                margin-bottom: 0;
+            }
 
-        body {
-            padding: 0;
-            margin: 0
-        }
+            input[type=range] {
+                -webkit-appearance: none;
+                size: 10px;
+                width: 10%;
+            }
 
-        #canvas {
-            top: 0;
-            width: 100%;
-            height: 100%
-        }
+            input[type=range]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                border: 1px solid #000000;
+                height: 16px;
+                width: 8px;
+                border-radius: 3px;
+                background: #ffffff;
+                cursor: pointer;
+                margin-top: -14px;
+                box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+            }
 
-        .checkbox label {
-            margin-right: 10px
-        }
+            canvas {
+                position: absolute;
+            }
 
-        form {
-            margin-bottom: 0
-        }
+            #main {
+                position: absolute;
+            }
 
-        .btn-play,
-        .btn-settings,
-        .btn-watch {
-            display: block;
-            height: 35px
-        }
+            .checkbox label {
+                margin-right: 10px
+            }
 
-        .btn-play {
-            width: 65%;
-            float: left
-        }
+            form {
+                margin-bottom: 0
+            }
 
-        .btn-settings {
-            width: 13%;
-            float: right
-        }
+            .btn-play,
+            .btn-settings,
+            .btn-watch {
+                display: block;
+                height: 35px
+            }
 
-        .btn-watch {
-            display: block;
-            float: right
-        }
+            .btn-play {
+                width: 65%;
+                float: left
+            }
 
-        #nick {
-            width: 65%;
-            float: left
-        }
+            .btn-settings {
+                width: 13%;
+                float: right
+            }
 
-        #locationUnknown #region {
-            margin-bottom: 15px
-        }
+            .btn-watch {
+                display: block;
+                float: right
+            }
 
-        #watchBtn {
-            width: 33%;
-            float: right
-        }
+            #nick {
+                width: 65%;
+                float: left
+            }
 
-        #helloDialog:hover {
-            border-top: #000FFF;
-            border-bottom: #000FFF;
-            border-left: #000FFF;
-            border-right: #000FFF;
-        }
+            #watchBtn {
+                width: 33%;
+                float: right
+            }
 
-        #helloDialog {
-            width: 350px;
-            background-size: 350px;
-            background-color: rgb(51, 51, 51);
-            margin: 10px -50% 10px auto;
-            padding: 5px 15px;
-            top: 50%;
-            left: 50%;
-            -webkit-transform: translate(-50%, -50%);
-            -ms-transform: translate(-50%, -50%);
-            transform: translate(-50%, -50%)
-        }
+            #main:hover {
+                border-top: #000FFF;
+                border-bottom: #000FFF;
+                border-left: #000FFF;
+                border-right: #000FFF;
+            }
 
-        .bs-example {
-            margin: 20px;
-        }
-
-        .Profimg {
-            border-color: white;
-            border-width: 2px;
-            border-style: solid;
-            width: 100px;
-            border-radius: 50%;
-            height: 100px;
-        }
-
-        #leftPanel {
-            width: 300px;
-            height: 350px;
-            background-image: url(http://inspiringdiscovery.com/wp-content/uploads/2013/07/harbour_sunset-wide.jpg);
-            margin: 10px;
-            padding: 5px 15px 5px 15px;
-            position: absolute;
-            top: 46%;
-            left: -50%;
-            margin-right: -70%;
-            -webkit-transform: translate(-50%, -50%);
-            -ms-transform: translate(-50%, -50%);
-            transform: translate(-50%, -50%);
-        }
-
-        .navcoins {
-            padding: 0px 10px;
-            height: 30px;
-            line-height: 31px;
-            font-size: 16px;
-            margin-left: 5px;
-        }
-
-        .agario-side-panel {
-            display: inline-block;
-            width: 220px;
-            margin: 2px 0
-        }
-
-        .agario-panel {
-            display: inline-block;
-            width: 350px;
-            background-color: #FFF;
-            margin: 2px;
-            border-radius: 10px;
-            padding: 5px 15px;
-            vertical-align: top
-        }
-
-        .agario-shop-panel {
-            padding: 15px;
-            float: right
-        }
-
-        .side-container {
-            vertical-align: top;
-            display: inline-block;
-            width: 294px
-        }
-
-        .left-container {
-            width: 250px;
-            margin-left: 44px
-        }
-
-        .menu {
-            width: 100px;
-            background: #000;
-            color: #fff;
-            position: absolute;
-            z-index: 999999;
-            display: none;
-            box-shadow: 0 0 10px #713C3C;
-        }
-
-        .menu ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .menu ul a {
-            text-decoration: none;
-        }
-
-        .menu ul li {
-            width: 88%;
-            padding: 6%;
-            background-color: #F04D44;
-            color: #fff;
-        }
-
-        .menu ul li:hover {
-            background-color: #F7BA4B;
-            color: #444343;
+            #main {
+                width: 350px;
+                background-size: 350px;
+                background-color: rgb(51, 51, 51);
+                margin: 10px -50% 10px auto;
+                padding: 5px 15px;
+                top: 50%;
+                left: 50%;
+                -webkit-transform: translate(-50%, -50%);
+                -ms-transform: translate(-50%, -50%);
+                transform: translate(-50%, -50%)
+            }
