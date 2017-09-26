@@ -13,7 +13,7 @@ ______
 5. Add gameplay options.
 6. Add theming.
 7. Remove previous text engine.
-8. Add fps counter.
+8. Change fps counter to be more dynamic.
 9. Improve css slightly.
 10. Add shake effect to heading.
 
