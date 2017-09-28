@@ -1,7 +1,8 @@
+//let teamScores = null;
 let request = prompt("Enter server address:port", "ws://127.0.0.1:443");
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-let leaderBoard = [];
+let leaderboard = [];
 let ws = null;
 let nodeX = 0;
 let nodeY = 0;
@@ -26,7 +27,6 @@ let userScore = 0;
 let posX = nodeX = ~~((leftPos + rightPos) / 2);
 let posY = nodeY = ~~((topPos + bottomPos) / 2);
 let posSize = 1;
-let teamScores = null;
 let zoom = 1;
 let minX = 0;
 let minY = 0;
@@ -150,7 +150,7 @@ function updateWindowFunctions() {
     $("#bgColour").change(function () {
         options.bgColour = $("#bgColour").val();
     });
-    
+
     $("#borderColour").change(function () {
         options.borderColour = $("#borderColour").val();
     });
@@ -175,8 +175,8 @@ function resetVars() {
     nodes = {};
     nodelist = [];
     Cells = [];
-    leaderBoard = [];
-    canvas = teamScores = null;
+    leaderboard = [];
+    canvas = /*teamScores =*/ null;
     userScore = 0;
 }
 
@@ -186,7 +186,7 @@ function connect(url) {
     ws.binaryType = "arraybuffer";
     ws.onmessage = onWsMessage;
     ws.onerror = function (e) {
-        toaster.err("%c Error ", "background-color: #000000; color: #27AE60;", e);
+        console.log("Error " + e);
     }
     ws.onopen = function () {
         resetVars();
@@ -280,21 +280,20 @@ function handleMessage(msg) {
             if (!setCustomLB) {
                 noRanking = false;
             }
-            teamScores = null;
+            //teamScores = null;
             var LBplayerNum = msg.getUint32(offset, true);
             offset += 4;
-            leaderBoard = [];
+            leaderboard = [];
             for (i = 0; i < LBplayerNum; ++i) {
                 var nodeId = msg.getUint32(offset, true);
                 offset += 4;
-                leaderBoard.push({
+                leaderboard.push({
                     id: nodeId,
                     name: getString()
                 });
             }
-            //CreateLeaderboard();
             break;
-        case 50:
+        /*case 50:
             teamScores = [];
             var LBteamNum = msg.getUint32(offset, true);
             offset += 4;
@@ -302,8 +301,7 @@ function handleMessage(msg) {
                 teamScores.push(msg.getFloat32(offset, true));
                 offset += 4;
             }
-            //CreateLeaderboard();
-            break;
+            break;*/
         case 64:
             leftPos = msg.getFloat64(offset, true);
             offset += 8;
@@ -560,15 +558,16 @@ function Draw() {
     for (d = 0; d < Cells.length; d++) Cells[d].drawOneCell(ctx);
     for (d = 0; d < nodelist.length; d++) nodelist[d].drawOneCell(ctx);
     ctx.restore();
-    CreateLeaderboard();
     userScore = Math.max(userScore, calcUserScore());
 
+    //Score
     let scoreText = "Score " + ~~(userScore / 100);
     ctx.globalAlpha = 1;
     ctx.font = '20px Tahoma';
     ctx.fillStyle = '#FFF';
     ctx.fillText(scoreText, 10, 25);
 
+    // FPS
     let frames = fps.getFPS();
     let fpsText = "FPS " + frames;
 
@@ -583,7 +582,25 @@ function Draw() {
     ctx.globalAlpha = 1;
     ctx.font = '20px Tahoma';
     ctx.fillText(fpsText, 10, 50);
+
+    if (leaderboard.length === 0) {
+        return;
+    };
+
+    // Very simple leaderboard
+    for (var i = 0; i < leaderboard.length; i++) {
+        const section = leaderboard[i];
+        const name = (i + 1) + ". " + section.name;
+        const y = 25;
+        ctx.globalAlpha = .8;
+        ctx.strokeStyle = "#000"
+        ctx.font = '20px Tahoma';
+        ctx.fillStyle = "#FFF";
+        ctx.fillText(name, (ctx.canvas.width - 200), 40 + 24 * i);
+    };
+
     ctx.restore();
+
 }
 
 function Borders() {
@@ -613,10 +630,6 @@ function calcUserScore() {
     return score
 }
 
-function CreateLeaderboard() {
-
-}
-
 function Cell(id, x, y, size, color, name) {
     this.id = id;
     this.ox = this.x = x;
@@ -629,7 +642,6 @@ function Cell(id, x, y, size, color, name) {
     this.name = name;
 }
 
-var scoreText = null;
 Cell.prototype = {
     id: 0,
     points: null,

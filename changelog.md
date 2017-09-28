@@ -1,5 +1,13 @@
 # Changelog
 
+### **_26/09/17_**
+
+```MD
+V0.0.5
+______
+
+1. Implement simple leaderboard.
+```
 
 ### **_26/09/17_**
 ```MD
