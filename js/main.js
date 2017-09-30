@@ -594,7 +594,7 @@ function Draw() {
         const y = 25;
         ctx.globalAlpha = .8;
         ctx.strokeStyle = "#000"
-        ctx.font = '20px Tahoma';
+        ctx.font = '15px Tahoma';
         ctx.fillStyle = "#FFF";
         ctx.fillText(name, (ctx.canvas.width - 200), 40 + 24 * i);
     };
