@@ -2,6 +2,7 @@
 let request = prompt("Enter server address:port", "ws://127.0.0.1:443");
 let canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
+let messages = [];
 let leaderboard = [];
 let ws = null;
 let nodeX = 0;
@@ -107,13 +108,33 @@ function updateWindowFunctions() {
                 // W
                 sendUint8(21);
                 break;
+            case 80:
+                // P (Collect pellets)
+                sendUint8(25);
+                break;
             case 27:
                 // ESC (Menu)
                 showOverlays(true);
                 break;
-            case 80:
-                // P (Collect pellets)
-                sendUint8(25);
+            case 13:
+                // Chat 
+                const textBox = document.getElementById("chat");
+
+                if (textBox.value.length === 0) {
+                    textBox.focus();
+                } else {
+                    var msg = prepareData(2 + 2 * textBox.value.length);
+                    var offset = 0;
+                    msg.setUint8(offset++, 99);
+                    msg.setUint8(offset++, 0);
+                    for (var i = 0; i < textBox.value.length; ++i) {
+                        msg.setUint16(offset, textBox.value.charCodeAt(i), true);
+                        offset += 2;
+                    }
+                    send(msg)
+                }
+
+                textBox.value = "";
                 break;
         };
 
@@ -190,6 +211,7 @@ function connect(url) {
     }
     ws.onopen = function () {
         resetVars();
+
         var msg = prepareData(5);
         msg.setUint8(0, 254);
         msg.setUint32(1, 4, true);
@@ -198,12 +220,14 @@ function connect(url) {
         msg.setUint8(0, 255);
         msg.setUint32(1, 1332175218, true);
         send(msg);
+
         setTimeout(function () {
             console.log('Connected to server!');
         }, 1000);
     }
     ws.onclose = function (e) {
         connect(request);
+        resetVars();
         console.log("Disconnected from server!");
     }
 }
@@ -293,15 +317,15 @@ function handleMessage(msg) {
                 });
             }
             break;
-        /*case 50:
-            teamScores = [];
-            var LBteamNum = msg.getUint32(offset, true);
-            offset += 4;
-            for (var i = 0; i < LBteamNum; ++i) {
-                teamScores.push(msg.getFloat32(offset, true));
+            /*case 50:
+                teamScores = [];
+                var LBteamNum = msg.getUint32(offset, true);
                 offset += 4;
-            }
-            break;*/
+                for (var i = 0; i < LBteamNum; ++i) {
+                    teamScores.push(msg.getFloat32(offset, true));
+                    offset += 4;
+                }
+                break;*/
         case 64:
             leftPos = msg.getFloat64(offset, true);
             offset += 8;
@@ -325,20 +349,35 @@ function handleMessage(msg) {
             maxY = bottomPos;
             break;
         case 99:
-            // Reserve for a chat function
-            break;
+            offset++
+            const r = msg.getUint8(offset++);
+            const g = msg.getUint8(offset++)
+            const b = msg.getUint8(offset++)
+            let color = (r << 16 | g << 8 | b).toString(16);
+
+            while (color.length > 6) {
+                color = '0' + color;
+            }
+            color = '#' + color;
+
+            messages.push({
+                author: getString(),
+                color: color,
+                content: getString(),
+                time: Date.now(),
+            });
 
     }
 }
 
-function updateNodes(view, offset) {
+function updateNodes(msg, offset) {
     timestamp = +new Date;
     var code = Math.random();
-    var queueLength = view.getUint16(offset, true);
+    var queueLength = msg.getUint16(offset, true);
     offset += 2;
     for (i = 0; i < queueLength; ++i) {
-        var killer = nodes[view.getUint32(offset, true)],
-            killedNode = nodes[view.getUint32(offset + 4, true)];
+        var killer = nodes[msg.getUint32(offset, true)],
+            killedNode = nodes[msg.getUint32(offset + 4, true)];
         offset += 8;
         if (killer && killedNode) {
             killedNode.destroy();
@@ -352,26 +391,26 @@ function updateNodes(view, offset) {
         }
     }
     for (var i = 0;;) {
-        var nodeid = view.getUint32(offset, true);
+        var nodeid = msg.getUint32(offset, true);
         offset += 4;
         if (0 == nodeid) break;
         ++i;
-        var size, posY, posX = view.getInt16(offset, true);
+        var size, posY, posX = msg.getInt16(offset, true);
         offset += 2;
-        posY = view.getInt16(offset, true);
+        posY = msg.getInt16(offset, true);
         offset += 2;
-        size = view.getInt16(offset, true);
+        size = msg.getInt16(offset, true);
         offset += 2;
-        for (var r = view.getUint8(offset++), g = view.getUint8(offset++), b = view.getUint8(offset++), color = (r << 16 | g << 8 | b).toString(16); 6 > color.length;) color = "0" + color;
+        for (var r = msg.getUint8(offset++), g = msg.getUint8(offset++), b = msg.getUint8(offset++), color = (r << 16 | g << 8 | b).toString(16); 6 > color.length;) color = "0" + color;
         var colorstr = "#" + color,
-            flags = view.getUint8(offset++),
+            flags = msg.getUint8(offset++),
             flagVirus = !!(flags & 1),
             flagPlayer = !!(flags & 16);
         flags & 2 && (offset += 4);
         flags & 4 && (offset += 8);
         flags & 8 && (offset += 16);
         for (var char, name = "";;) {
-            char = view.getUint16(offset, true);
+            char = msg.getUint16(offset, true);
             offset += 2;
             if (0 == char) break;
             name += String.fromCharCode(char)
@@ -408,10 +447,10 @@ function updateNodes(view, offset) {
             }
         }
     }
-    queueLength = view.getUint32(offset, true);
+    queueLength = msg.getUint32(offset, true);
     offset += 4;
     for (i = 0; i < queueLength; i++) {
-        var nodeId = view.getUint32(offset, true);
+        var nodeId = msg.getUint32(offset, true);
         offset += 4;
         node = nodes[nodeId];
         null != node && node.destroy();
@@ -591,7 +630,6 @@ function Draw() {
     for (var i = 0; i < leaderboard.length; i++) {
         const section = leaderboard[i];
         const name = (i + 1) + ". " + section.name;
-        const y = 25;
         ctx.globalAlpha = .8;
         ctx.strokeStyle = "#000"
         ctx.font = '15px Tahoma';
@@ -599,8 +637,24 @@ function Draw() {
         ctx.fillText(name, (ctx.canvas.width - 200), 40 + 24 * i);
     };
 
-    ctx.restore();
+    // Keep chat board short
+    if (messages.length > 5) {
+        messages.splice(0, messages.length - 1)
+    }
 
+    // Chat board
+    for (var i = 0; i < messages.length; i++) {
+        const message = messages[i];
+        const content = message.content;
+        const author = message.author;
+
+        ctx.globalAlpha = .8;
+        ctx.font = '15px Tahoma';
+        ctx.fillStyle = message.color;
+        ctx.fillText(author + ": " + content, (ctx.canvas.width / ctx.canvas.height) + 20, (ctx.canvas.height / ctx.canvas.width) + ctx.canvas.height - 70 - 24 * i);
+    };
+
+    ctx.restore();
 }
 
 function Borders() {

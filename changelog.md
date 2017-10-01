@@ -6,6 +6,15 @@
 V0.0.5
 ______
 
+1. Implement chat.
+```
+
+### **_26/09/17_**
+
+```MD
+V0.0.5
+______
+
 1. Implement simple leaderboard.
 ```
 
