@@ -31,6 +31,7 @@ let posSize = 1;
 let zoom = 1;
 let minX = 0;
 let minY = 0;
+let isWatching = false;
 let maxX = 0;
 let maxY = 0;
 let noRanking = false;
@@ -60,7 +61,7 @@ let fps = {
 };
 
 $(document).ready(function () {
-    connect(request, true);
+    connect(request);
 });
 
 function Main() {
@@ -149,6 +150,7 @@ function updateWindowFunctions() {
 
     window.watch = function () {
         userNickName = null;
+        isWatching = true;
         sendUint8(1);
         hideOverlays()
     };
@@ -180,7 +182,7 @@ function updateWindowFunctions() {
         options.sectorColour = $("#sectorColour").val();
     });
 
-    if (playerCells.length === 0) {
+    if (playerCells.length === 0 && isWatching === false ) {
         showOverlays(true)
     }
 }
@@ -651,7 +653,7 @@ function Draw() {
         ctx.globalAlpha = .8;
         ctx.font = '15px Tahoma';
         ctx.fillStyle = message.color;
-        ctx.fillText(author + ": " + content, (ctx.canvas.width / ctx.canvas.height) + 20, (ctx.canvas.height / ctx.canvas.width) + ctx.canvas.height - 70 - 24 * i);
+        ctx.fillText(author + (author == "SERVER" ? ": " : " said ") + content, (ctx.canvas.width / ctx.canvas.height) + 20, (ctx.canvas.height / ctx.canvas.width) + ctx.canvas.height - 70 - 24 * i);
     };
 
     ctx.restore();
